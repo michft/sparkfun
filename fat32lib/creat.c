@@ -3,8 +3,7 @@
 // sequence number for next auto log file name;
 static u32 nextlog = 0;
 
-unsigned char fntemplate[10] = "FFFFFFFF";
-unsigned char extension[4] = "LOG";
+unsigned char newextension[4] = "LOG";
 
 static void clearclus(u32 clus)
 {
@@ -49,8 +48,7 @@ static int findemptydirent(u8 * dosname)
                 if (c[11] == 0x0f)      // long name ent
                     continue;
                 if (!dosname) {
-
-                    if (c[8] == extension[0] && c[9] == extension[1] && c[10] == extension[2]) {
+                    if (c[8] == newextension[0] && c[9] == newextension[1] && c[10] == newextension[2]) {
                         u32 thislog = 0;
                         u16 j, k;
                         for (j = 0; j < 8; j++) {
@@ -97,6 +95,43 @@ static void setdirent(u8 * c, u8 attr, u32 clus)
     }
 }
 
+static u32 getclus()
+{
+    u32 clus = 0, newclus, curr = 1;
+    u8 *c;
+
+    newclus = currclus + 1;
+    while (newclus < fpm.mxcl) {
+        readsec(fpm.fat0 + (newclus >> 7));     // read sector with cluster
+        clus = newclus & 127;   // index within sector
+        c = &filesectbuf[clus << 2];
+        do {
+            get4todw(curr);     // get linked cluster
+        } while (curr && ++clus < 128);
+        newclus &= ~127;
+        if (clus < 128)
+            break;
+        newclus += 128;
+    }
+    if (newclus >= fpm.mxcl)
+        return 0;
+    newclus += clus;
+    c = &filesectbuf[clus << 2];
+    *c++ = 0xff;
+    *c++ = 0xff;
+    *c++ = 0xff;
+    *c = 0x0f;
+    // can merge link here for that case - saves extra read and write if in same clus
+    u8 i;
+    for (i = 0; i < fpm.nft; i++)
+        writesec(fpm.fat0 + (newclus >> 7) + i * fpm.spf);
+
+    secinclus = 0;
+    byteinsec = 0;
+
+    return newclus;
+}
+
 int newdirent(u8 * dosname, u8 attr)
 {
     int r;
@@ -122,7 +157,7 @@ int newdirent(u8 * dosname, u8 attr)
         u32 t = nextlog;
         u8 i = 8, j;
         c += 8;
-        tzmemcpy(c, extension, 3);
+        tzmemcpy(c, newextension, 3);
         while (i--) {
             j = t & 15;
 #ifndef HEXFN

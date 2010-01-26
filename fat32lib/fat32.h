@@ -42,8 +42,7 @@ int getdirent(u8 * dosmatch);
 // creates new file or directory (attr with 0x10 set) - changes to dir or ready to write if xero return
 // combined creat / mkdir
 // if dosname is NULL (a null pointer) it creates %08X.LOG where the number is 1 greater than any existing
-unsigned char extension[4]; //= "LOG";
-unsigned char fntemplate[10]; //= "FFFFFFFF";
+unsigned char newextension[4]; //= "LOG";
 int newdirent(u8 * dosname, u8 attr);
 
 // WRITE
@@ -58,6 +57,7 @@ int writenextsect(void);        // writes entire secbuf, links, continues at nex
 // write out partially written sector
 void flushbuf(void);
 
+// DO flushbuf BEFORE CALLING THIS IF THE BUFFER IS NOT FLUSHED
 // update dirent for writes - mainly file size if changed.past EOF.
 // Maxout extends to end of cluster for crash recovery - won't miss anything
 void syncdirent(u8 maxout);

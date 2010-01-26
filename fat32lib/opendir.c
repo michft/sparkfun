@@ -38,6 +38,8 @@ int getdirent(u8 * dosmatch)
                 entcnt++;       // count entries
                 //               printf( ">%11.11s\n", c );
                 if (!tzfncmp(c, dosmatch)) {
+                    // RENAME HERE, memcpy 11 (or 3 for EXT) and writesec(thissector)
+
                     // check attributes, etc.
                     u16 chf;
                     c += 20;

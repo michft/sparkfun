@@ -30,69 +30,71 @@ void syncdirent(u8 maxout)
     writesec(direntsect);
 }
 
-u32 getclus()
+// this allocates and links in a new cluseter.
+// inlined getclus so for in-sector, it iw r w(w fat copy 2) except where the link crosses sectors
+// whire it is r0 ... rN wN(wN) r0 w0(w0).
+static int linkclus()
 {
-    u32 clus = 0, newclus, curr = 1;
+    u32 nextc;
+    u32 clus = 0, curr = 1;
+    u32 cfatoffst, nfatoffst;
     u8 *c;
+    u8 i;
 
-    newclus = currclus + 1;
-    while (newclus < fpm.mxcl) {
-        readsec(fpm.fat0 + (newclus >> 7));     // read sector with cluster
-        clus = newclus & 127;   // index within sector
+    nextc = nextclus(currclus);
+    if (nextc < 0xffffff0)
+        return 0;
+
+    // from nextclus
+    cfatoffst = currclus >> 7;
+
+    nextc = currclus + 1;
+    while (nextc < fpm.mxcl) {
+        nfatoffst = nextc >> 7;
+        if( nfatoffst != cfatoffst ) {
+            readsec(fpm.fat0 + (nextc >> 7));     // read sector with cluster
+            cfatoffst = nfatoffst;
+        }
+        clus = nextc & 127;   // index within sector
         c = &filesectbuf[clus << 2];
         do {
             get4todw(curr);     // get linked cluster
         } while (curr && ++clus < 128);
-        newclus &= ~127;
+        nextc &= ~127;
         if (clus < 128)
             break;
-        newclus += 128;
+        nextc += 128;
     }
-    if (newclus >= fpm.mxcl)
-        return 0;
-    newclus += clus;
+    if (nextc >= fpm.mxcl) {
+        currclus = 0;
+        return -1;
+    }
+    nextc += clus;
     c = &filesectbuf[clus << 2];
     *c++ = 0xff;
     *c++ = 0xff;
     *c++ = 0xff;
     *c = 0x0f;
-    // can merge link here for that case - saves extra read and write if in same clus
-    u8 i;
-    for (i = 0; i < fpm.nft; i++)
-        writesec(fpm.fat0 + (newclus >> 7) + i * fpm.spf);
 
-    secinclus = 0;
-    byteinsec = 0;
-
-    return newclus;
-}
-
-static void linkclus()
-{
-    u32 nextc;
-
-    nextc = nextclus(currclus);
-    if (nextc < 0xffffff0)
-        return;
-
-    nextc = getclus();
-    if (!nextc) {
-        currclus = 0;
-        return;
+    cfatoffst = currclus >> 7;
+    if( cfatoffst != nfatoffst ) { // next clus is in diff FAT sector
+        for (i = 0; i < fpm.nft; i++)
+            writesec(fpm.fat0 + (nextc >> 7) + i * fpm.spf);
+        readsec(fpm.fat0 + cfatoffst);        // read sector with cluster
     }
-    // redundant if alloc and next are in same FAT sector
-    readsec(fpm.fat0 + (currclus >> 7));        // read sector with cluster
-    u8 *c = &filesectbuf[(currclus & 127) << 2];
+    c = &filesectbuf[(currclus & 127) << 2];
     // should be 0x0fffffff;
     *c++ = nextc;
     *c++ = nextc >> 8;
     *c++ = nextc >> 16;
     *c = nextc >> 24;
 
-    u8 i;
-    for (i = 0; i < fpm.nft; i++)
+    for (i = 0; i < fpm.nft; i++) // write the linked version out
         writesec(fpm.fat0 + (currclus >> 7) + i * fpm.spf);
     currclus = nextc;
+    secinclus = 0;
+    byteinsec = 0;
+    return 0;
 }
 
 void flushbuf()
@@ -130,7 +132,8 @@ int writenextsect()
 #if 0
         syncdirent(0);
 #endif
-        linkclus();
+        if( linkclus() )
+            return 1;
         secinclus = 0;
         if (currclus < 2)
             return 1;           // written, but no more space

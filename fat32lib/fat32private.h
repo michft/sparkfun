@@ -62,7 +62,6 @@ FAT32EXTERN u16 byteinsec;      //which byte in the sector
 FAT32EXTERN u8 rmw;             // read-mod-write mode, off after new file, append, and truncate
 
 u32 nextclus(u32 clus);
-u32 getclus(void);
 
 // ATTR X X ARCH DIR VOLID SYS HID RO
 // DATE Y-1980, 7 bits : Month 1-12 J=1, 4 bits, Day, 5 bits, 1-31
