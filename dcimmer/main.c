@@ -237,7 +237,7 @@ int main(void)
     int i;
 
     hwinit();
-    strcpy( extension, "JPG" );
+    strcpy( newextension, "JPG" );
     do {
         i = fsinit();
         PORTD |= 0xe0;
