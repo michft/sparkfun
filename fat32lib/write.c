@@ -1,5 +1,4 @@
 #include "fat32private.h"
-#include <stdio.h>
 
 void syncdirent(u8 maxout)
 {

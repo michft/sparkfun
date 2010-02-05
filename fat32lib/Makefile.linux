@@ -1,4 +1,4 @@
-all: setforlinux liblinfat32.a sdhcemu.o
+all: setforlinux liblinfat32.a 
 
 CFLAGS=-g -O2 -Wall $(DFLAGS)
 CC=gcc
@@ -14,7 +14,7 @@ setforlinux:
 	rm -f setforavr
 
 clean:
-	rm -f *.hex *.eep *.elf *.lss *.sym *.dsm *.o *.a *.d
+	rm -f *.hex *.eep *.elf *.lss *.sym *.dsm *.o *.d
 
 mount.o fat32data.o opendir.o creat.o deltrunc.o write.o read.o seek.o: fat32.h fat32private.h
 

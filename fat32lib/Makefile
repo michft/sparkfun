@@ -1,4 +1,4 @@
-all: libfat32.a sdhc.o setforavr
+all: setforavr libfat32.a sdhc.o
 
 .SUFFIXES: .elf .hex .eep .lss .sym .upload .dsm .c .s .S .o .l
 
@@ -32,7 +32,7 @@ setforavr:
 	rm -f setforlinux
 
 clean:
-	rm -f *.hex *.eep *.elf *.lss *.sym *.dsm *.o *.a *.d
+	rm -f *.hex *.eep *.elf *.lss *.sym *.dsm *.o *.d
 
 mount.o fat32data.o opendir.o creat.o deltrunc.o write.o read.o seek.o: fat32.h fat32private.h
 

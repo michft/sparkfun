@@ -65,6 +65,6 @@ u32 nextclus(u32 clus);
 
 // ATTR X X ARCH DIR VOLID SYS HID RO
 // DATE Y-1980, 7 bits : Month 1-12 J=1, 4 bits, Day, 5 bits, 1-31
-#define todosdate(y,m,d) (y-1980<<9|m<<5|d)
+#define todosdate(y,m,d) ((y-1980)<<9|m<<5|d)
 // TIME Hour, 5bits, 0-23 ; Minute 6bits, 0-59 ; Secs/2, 5 bits, 0-29 for 0-58.
 #define todostime(h,m,s) (h<<11|m<<5|s>>1)

@@ -36,7 +36,6 @@ int rawmount(u32 addr, u32 partlen)
 
     // 3-a OEM name
     u8 *c;
-    u16 flg;                    // FAT flag - mirroring disable (0x80), ls4b which FAT is master
     u16 rsv;                    // reserved sectors - first fat starts just after
     u16 fsi;                    // sector of filesystem info (hints)
 
@@ -46,21 +45,23 @@ int rawmount(u32 addr, u32 partlen)
     fpm.nft = *c++;
     c = &filesectbuf[0x20];
     get4todw(fpm.mxcl);         // get total
+
     if (fpm.mxcl > partlen)
-        return -2;              // more sectors than partition table says
+        return -3;              // more sectors than partition table says
     get4todw(fpm.spf);
     // this is the only divide
     fpm.mxcl = (fpm.mxcl - rsv - (fpm.nft * fpm.spf)) / fpm.spc;
 
-    get2tow(flg);
-    if (flg)
-        return -2;              // assume first cluster is master, mirror - 99.9% case
+    get2tow(fsi);               // FAT flag - mirroring disable (0x80), ls4b which FAT is master
+    if (fsi)
+        return -4;              // assume first cluster is master, mirror - 99.9% case
 
     c += 2;
     get4todw(fpm.d0c);
     get2tow(fsi);
+
     if (fsi != 1)
-        return -1;              //assume fsinfo is at sector 1, 99% case
+        return -5;              //assume fsinfo is at sector 1, 99% case
     fpm.hint = addr + fsi;
     fpm.fat0 = addr + rsv;
     fpm.data0 = fpm.fat0 + fpm.nft * fpm.spf - (fpm.spc << 1);
@@ -74,7 +75,7 @@ int rawmount(u32 addr, u32 partlen)
     get4todw(s1);
 
     if (s0 != 0x41615252 || s1 != 0x61417272)
-        return -2;
+        return -6;
 
     resetrootdir();
     return 0;
@@ -125,8 +126,8 @@ static int decodeebr(u32 addr, u32 extpartlen)
     return 1;
 }
 #endif
+
 // index not used, but for Nth FAT32 partition
-//#include <stdio.h>
 int mount(int index)
 {
     u32 secaddr, partlen;
@@ -144,7 +145,6 @@ int mount(int index)
         c += 4;
         get4todw(secaddr);
         get4todw(partlen);
-        //        printf( "%lu, %lu, %d\n", secaddr, partlen, ptype );
         switch (ptype) {
         case 0xb:
         case 0xc:

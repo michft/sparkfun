@@ -1,5 +1,5 @@
-(TESTING) New cluster and link cluster should only do one read then write instead of r w r w.
 dirty buffer flag for RMW - write only when needed, validate RMW fully/properly
+Incrementing time (find latest, keep adding 2 seconds for sort order).
 Double buffer for sector (fill one while pulling from other).
 typedef int to something?
 max file size - if using auto-create log, auto create next log

@@ -62,6 +62,9 @@ void flushbuf(void);
 // Maxout extends to end of cluster for crash recovery - won't miss anything
 void syncdirent(u8 maxout);
 
+// For current file - change name entry - FLUSH before, SEEK after just like syncdirent.
+void setname(u8 *newname, u8 *newext);
+
 // reset next free clus and avail clus to unknown
 void zaphint(void);
 

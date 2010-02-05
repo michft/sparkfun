@@ -5,6 +5,19 @@ static u32 nextlog = 0;
 
 unsigned char newextension[4] = "LOG";
 
+void setname(u8 *newname, u8 *newext)
+{
+    if (!direntsect || readsec(direntsect))
+        return;
+    u8 *c;
+    c = &filesectbuf[direntnum << 5];
+    if( newname )
+        tzmemcpy(c, newname, 8 );
+    if( newext )
+        tzmemcpy(c, newname, 3 );
+    writesec(direntsect);
+}
+
 static void clearclus(u32 clus)
 {
     u16 sect;
@@ -48,7 +61,10 @@ static int findemptydirent(u8 * dosname)
                 if (c[11] == 0x0f)      // long name ent
                     continue;
                 if (!dosname) {
-                    if (c[8] == newextension[0] && c[9] == newextension[1] && c[10] == newextension[2]) {
+                    if (
+                        1 //ignore extension for now - rename TMP to LOG or JPG?
+                        // c[8] == newextension[0] && c[9] == newextension[1] && c[10] == newextension[2]
+                        ) {
                         u32 thislog = 0;
                         u16 j, k;
                         for (j = 0; j < 8; j++) {
@@ -80,8 +96,20 @@ static void setdirent(u8 * c, u8 attr, u32 clus)
 {
     c[11] = attr;
     // date - jan 2010
-    c[16] = c[18] = c[24] = 0x21;
-    c[17] = c[19] = c[25] = 0x3c;
+//0x0d create time ms, 0-199
+//0x0e-f create time
+//0x10-11 create date
+//0x12-3 last access date
+//0x16-7 last mod time
+//0x18-9 last mod date
+    unsigned crdate = todosdate(2010,1,26);
+    unsigned crtime = todostime(0,5,0);
+    c[16] = c[18] = c[24] = crdate;
+    c[17] = c[19] = c[25] = crdate >> 8;
+    c[13] = 100;
+    c[14] = c[22] = crtime;
+    c[15] = c[23] = crtime >> 8;
+
     c[26] = clus;
     c[27] = clus >> 8;
     c[20] = clus >> 16;
