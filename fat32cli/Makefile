@@ -1,4 +1,4 @@
-all: fat32cli.hex
+all: ../fat32lib/libfat32.a fat32cli.hex
 
 .SUFFIXES: .elf .hex .eep .lss .sym .upload .dsm .c .s .S .o .l
 
