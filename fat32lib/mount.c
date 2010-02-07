@@ -39,6 +39,7 @@ int rawmount(u32 addr, u32 partlen)
     u16 rsv;                    // reserved sectors - first fat starts just after
     u16 fsi;                    // sector of filesystem info (hints)
 
+    // OMITTED check for bytes per sector, assuming 512
     c = &filesectbuf[0xd];
     fpm.spc = *c++;
     get2tow(rsv);

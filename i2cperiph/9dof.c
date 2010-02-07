@@ -121,10 +121,11 @@ int main(void)
         TWIinit();
         printf("9DoF\n");
         TWIdocmd(sendhmci); // Mag
-        TWIdocmd(msgsetup); // Accel
-        TWIdocmd(startacq); // Baro/Temp
+        //        TWIdocmd(msgsetup); // Accel
+        //        TWIdocmd(startacq); // Baro/Temp
 
         _delay_ms(200);
+        TWIdocmd(sendhmci);  // to insure init, need to do twice
         TWIdocmd(sendhmci);  // to insure init, need to do twice
 
         cnt = 0;
@@ -133,7 +134,7 @@ int main(void)
 	ADCSRA = 0xc6;
         while (cnt++ < 200) {
 
-#if 1
+#if 0
             TWIdocmd(ready);
             if( 0xe == (0xe & ready[5]) 
                 && (0x20 & ready[5]) ) // conversion ready
@@ -199,7 +200,7 @@ int main(void)
                 ADCSRA = 0xc6;
             }
 
-            for (;;) {
+            while(0) {
                 TWIdocmd(queryfifo);
                 unsigned char qlen = queryfifo[5];
                 if (!qlen)

@@ -35,7 +35,7 @@ MAP=-Wl,"-Map" -Wl,"$@.map" -Wl,"--cref"
 	avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" --change-section-lma .eeprom=0 --no-change-warnings -O ihex $^ $@
 
 .hex.upload: 
-	avrdude -F -p $(CPU) -P $(PORT) -c stk500v1 -b 57600 -U $^
+	avrdude -F -p $(CPU) -P $(PORT) -c arduino -b 57600 -U $^
 
 .eep.upload: 
 	avrdude -V -F -p $(CPU) -P $(PORT) -c stk500v1 -b 57600 -U eeprom:w:$^

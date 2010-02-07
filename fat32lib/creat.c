@@ -29,7 +29,7 @@ static void clearclus(u32 clus)
 static void ungetclus(u32 clus)
 {
     readsec(fpm.fat0 + (clus >> 7));
-    tzmemclr(&filesectbuf[(127 & clus) << 2], 0);
+    tzmemclr(&filesectbuf[(127 & clus) << 2], 4);
     u8 i;
     for (i = 0; i < fpm.nft; i++)
         writesec(fpm.fat0 + (clus >> 7) + i * fpm.spf);

@@ -36,6 +36,10 @@ int main(void)
 
     for (;;) {
         TWIinit();
+        TWIdocmd(sendhmci);
+        _delay_ms(50);
+        TWIdocmd(sendhmci);
+        _delay_ms(50);
         cnt = 0;
         while (cnt++ < 200) {
             TWIdocmd(sendhmcpr);

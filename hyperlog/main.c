@@ -89,18 +89,18 @@ int main(void)
     unsigned long cnt = 100000; // timeout to push buffer
     for(;;) {
         i = uartgetch();
-        if( i < 0 ) {
-            if( UCSR0A & 0x10 ) { // break (FE), sync-trunc
-                UCSR0A &= ~0x10;
-                flushbuf();
-                syncdirent(1);
-                return 0;
-                PORTD &= ~0x20;
-                continue;
-            }
-            else if( cnt-- ) // break (FE) pushes
-                continue;
 
+        if( UCSR0A & 0x10 ) { // break (FE), sync-trunc
+            UCSR0A &= ~0x10;
+            flushbuf();
+            syncdirent(1);
+            PORTD &= ~0x20;
+            return 0;
+        }
+
+        if( i < 0 ) {
+            if( cnt-- ) // break (FE) pushes
+                continue;
             flushbuf();
             syncdirent(0);
             seekfile(0,2);

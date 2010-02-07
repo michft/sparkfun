@@ -222,11 +222,12 @@ int main(int argc, char *argv[])
         if (!i)
             seekfile(0, 0);
 #if 1                           // show what is read
-        else
-            for (i = 0; i < 1; i++) {
+        else {
+            for (i = 0; i < 2; i++) {
                 readsec(i);
                 dumpsect();
             }
+        }
 #endif
     }
     if (i)

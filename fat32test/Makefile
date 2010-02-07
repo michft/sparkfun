@@ -1,6 +1,6 @@
 all: setforlinux testfat
 
-CFLAGS=-g -O2 -Wall $(DFLAGS)
+CFLAGS=-g -O2 -Wall $(DFLAGS) -I../fat32lib -I.
 CC=gcc
 
 .c.o:
@@ -16,12 +16,7 @@ setforlinux:
 clean:
 	rm -f *.hex *.eep *.elf *.lss *.sym *.dsm *.o *.a *.d
 
-mount.o fat32data.o opendir.o creat.o deltrunc.o write.o read.o seek.o: fat32.h fat32private.h
-
 linuxmain.o: fat32.h sdhc.h
 
-liblinfat32.a: mount.o fat32data.o opendir.o creat.o deltrunc.o write.o read.o seek.o
-	ar r $@ $^
-
-testfat: main.o dosmunge.o sdhcemu.o liblinfat32.a
-	$(CC) -o $@ dosmunge.o main.o sdhcemu.o -L. -llinfat32
+testfat: main.o dosmunge.o sdhcemu.o
+	$(CC) -o $@ dosmunge.o main.o sdhcemu.o -L../fat32lib/ -llinfat32
