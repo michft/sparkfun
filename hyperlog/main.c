@@ -87,6 +87,7 @@ int main(void)
     PORTD |= 0x20;
     printf( "7" );
     unsigned long cnt = 100000; // timeout to push buffer
+    PRR = 0xe9;
     for(;;) {
         i = uartgetch();
 
@@ -105,6 +106,17 @@ int main(void)
             syncdirent(0);
             seekfile(0,2);
             PORTD &= ~0x20;
+
+            u8 sc = SPCR;
+            u8 ss = SPSR;
+            u8 t = MCUCR & 0x9f;
+            PRR = 0xe9+4;
+            MCUCR = 0x60;
+            MCUCR = 0x40;
+            sleep_mode();
+            PRR = 0xe9;
+            SPCR = sc;
+            SPSR = ss;
             for(;;) { // synced, don't have to do again.
                 i = uartgetch();
                 if( i >= 0 ) 
