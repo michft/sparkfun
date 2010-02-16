@@ -1,7 +1,33 @@
 #include "fat32private.h"
 
+static u16 yr=2010;
+static u8 mo=2,dy=1,hr=0,mn=0,sc=0;
+
+static void fixtime() {
+    while( sc > 59 )
+        mn++, sc -= 60;
+    while( mn > 59 )
+        hr++, mn-= 60;
+    while( hr > 23 )
+        dy++, hr-= 24;
+    while( dy > 28 )
+        mo++, dy-= 28;
+    while( mo > 12 )
+        yr++, mo-= 12;
+}
+
+void settime(u8 a, u8 b, u8 c, u8 d, u8 e, u8 f) {
+    sc = a;
+    mn = b;
+    hr = c;
+    dy = d;
+    mo = e;
+    yr = 2000 + f;
+    fixtime();
+}
+
 // sequence number for next auto log file name;
-static u32 nextlog = 0;
+u32 nextlogseq = 0;
 
 unsigned char newextension[4] = "LOG";
 
@@ -77,8 +103,8 @@ static int findemptydirent(u8 * dosname)
                             thislog |= k;
                         }
                         if (thislog != 0xffffffff) {
-                            if (thislog >= nextlog)
-                                nextlog = thislog + 1;
+                            if (thislog >= nextlogseq)
+                                nextlogseq = thislog + 1;
                         }
                     }
                 } else if (!tzfncmp(c, dosname))
@@ -102,8 +128,8 @@ static void setdirent(u8 * c, u8 attr, u32 clus)
 //0x12-3 last access date
 //0x16-7 last mod time
 //0x18-9 last mod date
-    unsigned crdate = todosdate(2010,1,26);
-    unsigned crtime = todostime(0,5,0);
+    unsigned crdate = todosdate(yr,mo,dy);
+    unsigned crtime = todostime(hr,mn,sc);
     c[16] = c[18] = c[24] = crdate;
     c[17] = c[19] = c[25] = crdate >> 8;
     c[13] = 100;
@@ -181,22 +207,18 @@ int newdirent(u8 * dosname, u8 attr)
 
     tzmemclr(c, 32);
     if (!dosname) {
-        // replace nextlog with template
-        u32 t = nextlog;
+        // replace nextlogseq with template
+        u32 t = nextlogseq;
         u8 i = 8, j;
         c += 8;
         tzmemcpy(c, newextension, 3);
         while (i--) {
             j = t & 15;
-#ifndef HEXFN
+            // t/nextlog is BCD!
             if( j > 9 )
                 j -= 10, t += 6;
             t >>= 4;
             *--c = '0' + j;
-#else
-            t >>= 4;
-            *--c = j < 10 ? '0' + j : 'A' - 10 + j;
-#endif
         }
     } else
         tzmemcpy(c, dosname, 11);
@@ -220,6 +242,9 @@ int newdirent(u8 * dosname, u8 attr)
         currclus = 0;
         writesec(clus2sec(dirclus));
     }
+
+    sc +=2 ;
+    fixtime();
     byteinsec = 0;
     secinclus = 0;
     totfsiz = 0;

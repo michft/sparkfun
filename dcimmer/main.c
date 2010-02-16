@@ -9,12 +9,8 @@
 #include <avr/pgmspace.h>
 #include <util/delay.h>
 
-unsigned trigcnt = 100;
 void waitfortrig() {   
-    if( !trigcnt-- ) {
-        while( ( PORTD & 0xc ) == 0xc );
-        trigcnt = 100;
-    }
+    while( ( PORTD & 0xc ) != 0xc );
     return;
 }
 
@@ -221,7 +217,14 @@ static int fsinit() {
         if( i != 2 )
             return 3;
     }
+
+#if 1
+    nextlogseq = 0x1000000;
+    strcpy( newextension, "   " );
+    i = newdirent(NULL, 0x10);
+#else
     i = newdirent(jtdir, 0x10);
+#endif
     if( i && i != 2 )
         return 2;
     if( i == 2 ) {
@@ -229,6 +232,8 @@ static int fsinit() {
         if( i != 2 )
             return 1;
     }
+    strcpy( newextension, "JPG" );
+    nextlogseq = 0;
     return 0;
 }
 
@@ -237,7 +242,6 @@ int main(void)
     int i;
 
     hwinit();
-    strcpy( newextension, "JPG" );
     do {
         i = fsinit();
         PORTD |= 0xe0;

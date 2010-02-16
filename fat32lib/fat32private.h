@@ -1,5 +1,6 @@
 // Copyright 2010 tom zerucha, all rights reserved
 #include "fat32.h"
+#include "sdhc.h"
 #define clus2sec(x) (fpm.data0 + fpm.spc * x  )
 //#define get4todw(x) { x = *c++; x |= *c++ << 8; x |= ((u32) *c++) << 16; x |= ((u32) *c++) << 24; }
 // arduino avr-gcc hiccup

@@ -1,4 +1,4 @@
-#include "sdhc.h"
+#include "typefix.h"
 // Copyright 2010 tom zerucha, all rights reserved
 
 //MOUNT
@@ -42,8 +42,14 @@ int getdirent(u8 * dosmatch);
 // creates new file or directory (attr with 0x10 set) - changes to dir or ready to write if xero return
 // combined creat / mkdir
 // if dosname is NULL (a null pointer) it creates %08X.LOG where the number is 1 greater than any existing
-unsigned char newextension[4]; //= "LOG";
+u8 newextension[4]; //= "LOG";  This will be the extension for the automatic new files
 int newdirent(u8 * dosname, u8 attr);
+u32 nextlogseq; // BCD(!) number for the new file - New files will be this or greater
+
+// sets time for newly created files (incs by 2 seconds per new file)
+// sec/min/hour are zero based, day and month start at 1.
+// years are since the year 2000
+void settime(u8 second, u8 minut4e, u8 hour, u8 day, u8 month, u8 yrssince2000);
 
 // WRITE
 

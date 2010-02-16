@@ -109,10 +109,11 @@ int main(void)
 
             u8 sc = SPCR;
             u8 ss = SPSR;
-            u8 t = MCUCR & 0x9f;
+            u8 t = 0x40 | (MCUCR & 0x9f);
+            u8 s = t | 0x20;
             PRR = 0xe9+4;
-            MCUCR = 0x60;
-            MCUCR = 0x40;
+            MCUCR = s;
+            MCUCR = t;
             sleep_mode();
             PRR = 0xe9;
             SPCR = sc;
