@@ -11,34 +11,51 @@
 // Start, len bytes, rep start, len bytes, 0 does stop
 // 20 char
 
+#include <string.h>
+
 unsigned char lcdi0[] = {
-    14, 0x7E, 0x00,
-    0x48, 0x64, 0xA0, 0xC8, 0x44, 0x00, 0xAB, 0x26, 0x81, 0x1c, 0x56, 0x64,
-    0
+    15, 0x7E, 0x00,
+    0xe2, //reset
+    0x48, 0x64, // nset partial display duty
+    0xA0, // ADC normal
+    0xC8, // SHL reverse?
+    0x44, 0x00, // COM0 = 0
+    0xAB, // OSC start
+    0x26, // regulator register
+    0x81, 0x1c, // ref voltage set
+    0x56, // LCD Bias
+    0x64,// Set DC-DC
+    0	// END
 };
 
 unsigned char lcdi1[] = {
     4, 0x7E, 0x00,
-    0x2C, 0x66,
+    0x2C, // control power circuit - VC set
+    0x66, // Set DC-DC
     0
 };
 
 unsigned char lcdi2[] = {
     3, 0x7E, 0x00,
-    0x2E,
+    0x2E, // VR ON
     0
 };
 
 unsigned char lcdi3[] = {
-    2 + 7,
+    2 + 6,
     0x7E, 0x00,
-    0x2F, 0xF3, 0x00, 0x96, 0x38, 0x75, 0x97,
+    0x2F,  // VF ON
+    0xF3, 0x00, // Bias Power save
+    0x96, // FRC - 60 PWM
+    0x38, 0x75, // Set mode FR, BE Frame freq, boost efficient - ext on
+    //    0x97, // FRC?? ??
     0
 };
 
 unsigned char lcdi4[] = {
     2 + 64,
     0x7E, 0x00,
+    // white to gray to black
     0x80, 0x00, 0x81, 0x00, 0x82, 0x00, 0x83, 0x00, 0x84, 0x06, 0x85, 0x06, 0x86, 0x06, 0x87, 0x06,
     0x88, 0x0B, 0x89, 0x0B, 0x8A, 0x0B, 0x8B, 0x0B, 0x8C, 0x10, 0x8D, 0x10, 0x8E, 0x10, 0x8F, 0x10,
     0x90, 0x15, 0x91, 0x15, 0x92, 0x15, 0x93, 0x15, 0x94, 0x1A, 0x95, 0x1A, 0x96, 0x1A, 0x97, 0x1A,
@@ -59,18 +76,51 @@ unsigned char lcdi5[] = {
 unsigned char lcdi6[] = {
     2 + 3,
     0x7E, 0x00,
-    0x38, 0x74, 0xAF,
+    0x38, 0x74, // Mode Set, Fram Freq, boost efficient - ext off
+    0xAF, // display on
     0
 };
 
 unsigned char sendlcda0[] = {
-    7, 0x7e, 0x00, 0xb0, 0x10, 0, 0x00, 0,
+    7, 0x7e, 0x00, 0xb0, // page
+    0x10, 0, // colH
+    0x00, 0, // colL
     0, 0
 };
 
 unsigned char sendlcdb0[] = {
     6, 0x7e, 0x40, 0, 0, 0, 0,
     0, 0
+};
+
+unsigned char image[] = {
+
+1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,
+1,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,1,
+1,0,1,1,1,0,1,0,0,0,1,0,0,1,1,0,1,0,1,0,1,1,1,0,1,
+1,0,1,1,1,0,1,0,1,1,0,1,0,1,0,1,1,0,1,0,1,1,1,0,1,
+1,0,1,1,1,0,1,0,1,1,0,0,0,0,1,1,1,0,1,0,1,1,1,0,1,
+1,0,0,0,0,0,1,0,0,0,0,0,1,1,1,0,0,0,1,0,0,0,0,0,1,
+1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1,
+0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,
+0,0,1,1,1,0,0,1,1,0,1,0,0,1,0,1,1,1,1,1,0,0,1,1,1,
+1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,1,0,1,0,0,1,1,0,
+0,1,1,1,0,0,1,1,1,1,0,1,0,1,1,0,0,1,1,1,1,1,0,0,1,
+1,1,1,0,1,1,1,0,1,0,1,1,1,0,0,0,1,1,0,1,0,0,1,1,0,
+0,0,1,1,0,0,1,1,0,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,
+1,1,1,0,0,1,0,1,1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,1,0,
+1,0,1,1,0,1,1,0,1,0,1,1,1,0,0,0,1,1,1,1,1,0,1,1,1,
+1,0,0,1,0,0,1,1,1,1,1,1,0,1,0,1,1,0,0,1,1,0,0,0,1,
+0,0,1,1,1,1,1,1,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,0,
+1,0,0,1,1,0,0,0,1,0,1,1,0,1,0,0,1,0,0,0,0,0,0,0,0,
+1,1,1,0,1,0,1,0,1,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,
+1,0,1,0,1,0,0,0,1,0,1,0,1,1,0,1,1,0,1,0,0,0,0,0,1,
+1,1,1,0,1,1,1,1,1,0,0,0,0,1,1,1,0,0,1,0,1,1,1,0,1,
+1,1,1,1,1,1,0,0,1,0,1,0,1,0,1,0,0,0,1,0,1,1,1,0,1,
+0,0,1,1,0,0,1,1,1,0,0,1,1,0,0,1,1,0,1,0,1,1,1,0,1,
+1,0,0,0,1,0,1,0,0,0,1,0,1,1,1,0,1,0,1,0,0,0,0,0,1,
+1,1,1,1,1,0,1,1,0,1,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,
+
 };
 
 int main(void)
@@ -86,20 +136,26 @@ int main(void)
     TWIdocmd(lcdi2);
     _delay_ms(10);
     TWIdocmd(lcdi3);
+    _delay_ms(10);
     TWIdocmd(lcdi4);
+    _delay_ms(10);
     TWIdocmd(lcdi5);
+    _delay_ms(10);
     TWIdocmd(lcdi6);
-    unsigned char flp = 0;
-    for (;;){
-        flp++;
-        for (page = 0xb0; page < 0xbd; page++) {
-            sendlcda0[3] = page;
-            TWIdocmd(sendlcda0);
-            for (text = 0; text < 160; text++) {
-                unsigned char flx[4] = {0xff, 0x55, 0xaa, 0xf0};
-                unsigned char t = flx[flp&3];
 
-                unsigned char g = (text / 8) ^ (page & 15);
+    unsigned  p = 0;
+    for (page = 0xb0; page < 0xbd; page++, p+= 50) {
+        sendlcda0[3] = page;
+        TWIdocmd(sendlcda0);
+        _delay_ms(10);
+        for (text = 0; text < 160; text++) {
+                unsigned char t;
+                t = image[p + (text>>2)] ? 0 : 0xf;
+                t |= image[p + (text>>2)+25] ? 0 : 0xf0;
+                if( text > 99 )
+                    t = 0xff;
+                t ^= 0xff;
+                unsigned char g = 0xff;//(text / 8) ^ (page & 15);
                 memset(&sendlcdb0[3], 0, 4);
                 if (g & 8)
                     sendlcdb0[3] = t;
@@ -111,9 +167,11 @@ int main(void)
                     sendlcdb0[6] = t;
 
                 TWIdocmd(sendlcdb0);
-                //_delay_us(50);
+                _delay_us(250);
             }
         }
         _delay_ms(500);
-    }
+        for(;;);
 }
+                                                                                                                                                               
+                                    
