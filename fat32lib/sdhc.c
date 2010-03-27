@@ -10,12 +10,12 @@ u8 *filesectbuf = &sdhcbuf[4];
 static void sendspiblock(u8 *buf, u16 len)
 {
     if( SPSR & 1 ) {
-// NOTE you cannot reduce the number of NOPs since they are counting SPI clocks, not a delay
-    while (len--) {
-        SPDR = *buf++;
-        asm( " .rept 11\n nop\n .endr" );
-    }
-    return;
+        // NOTE you cannot reduce the number of NOPs since they are counting SPI clocks, not a delay
+        while (len--) {
+            SPDR = *buf++;
+            asm( " .rept 11\n nop\n .endr" );
+        }
+        return;
     }
     volatile u8 x;
     while (len--) {
@@ -24,28 +24,25 @@ static void sendspiblock(u8 *buf, u16 len)
         SPSR &= 0x7f;
         x = SPDR;
     }
-
-
 }
 
 static void recvspiblock(u16 len)
 {
     u8 *buf = filesectbuf;
     if( SPSR & 1 ) {
-    u8 t;
-    SPDR = 0xff;
-    while(--len) {
-        asm( " .rept 9\n nop\n .endr" );
-        t = SPDR;
+        u8 t;
         SPDR = 0xff;
-        // there is actuallya race condition if an interrupt occurs here.
-        *buf++ = t; // double buffered
+        while(--len) {
+            asm( " .rept 9\n nop\n .endr" );
+            t = SPDR;
+            SPDR = 0xff;
+            // there is actuallya race condition if an interrupt occurs here.
+            *buf++ = t; // double buffered
+        }
+        while (!(SPSR & 0x80));
+        SPSR &= 0x7f;
+        *buf = SPDR;
     }
-    while (!(SPSR & 0x80));
-    SPSR &= 0x7f;
-    *buf = SPDR;
-    }
-
     while (len--) {
         SPDR = 0xff;
         while (!(SPSR & 0x80));
@@ -302,4 +299,28 @@ u8 writesec(u32 blkaddr)
     }
     csinact();
     return ret;
+}
+
+void erasecard(void)
+{
+    rw1bcmd[0] = 0x40+32;
+    setblockaddr(0);
+    csact();
+    waitforspi(0xff); // wait for not busy
+    if (sendcommand(rw1bcmd))
+        return;
+    rw1bcmd[0] = 0x40+33;
+    setblockaddr(sdnumsectors - 1);
+    waitforspi(0xff); // wait for not busy
+    if (sendcommand(rw1bcmd))
+        return;
+    rw1bcmd[0] = 0x40+38;
+    waitforspi(0xff); // wait for not busy
+    if (sendcommand(rw1bcmd))
+        return;
+    waitforspi(0); // wait for busy
+    PORTD &= ~0x20;
+    waitforspi(0xff); // wait for not busy
+    PORTD |= 0x20;
+    csinact();
 }

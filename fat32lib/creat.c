@@ -1,7 +1,7 @@
 #include "fat32private.h"
 
 static u16 yr=2010;
-static u8 mo=2,dy=1,hr=0,mn=0,sc=0;
+static u8 mo=3,dy=24,hr=12,mn=34,sc=56;
 
 static void fixtime() {
     while( sc > 59 )
@@ -243,7 +243,7 @@ int newdirent(u8 * dosname, u8 attr)
         writesec(clus2sec(dirclus));
     }
 
-    sc +=2 ;
+    sc += 2;
     fixtime();
     byteinsec = 0;
     secinclus = 0;

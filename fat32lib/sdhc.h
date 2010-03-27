@@ -14,3 +14,4 @@ u8 writesec(u32 addr);
 // number of sectors on medium
 u32 sdnumsectors;
 
+void erasecard(void);

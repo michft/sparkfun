@@ -430,6 +430,9 @@ int main(int argc, char *argv[])
                 printf("Rewound\n");
             }
             break;
+        case '#':
+            erasecard();
+            break;
         case 'R':
         case 'V':
         case 'X':
