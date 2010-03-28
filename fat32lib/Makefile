@@ -38,5 +38,5 @@ mount.o fat32data.o opendir.o creat.o deltrunc.o write.o read.o seek.o: fat32.h 
 
 sdhc.o: sdhc.h
 
-libfat32.a: mount.o fat32data.o opendir.o creat.o deltrunc.o write.o read.o seek.o
+libfat32.a: mount.o fat32data.o opendir.o creat.o deltrunc.o write.o read.o seek.o format.o
 	avr-ar r $@ $^

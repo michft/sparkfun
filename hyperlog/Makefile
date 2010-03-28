@@ -6,10 +6,10 @@ CPU=atmega328p
 #PORT=/dev/rfcomm0
 PORT=/dev/ttyUSB0
 #Note: -O will break something, it won't output characters
-XTAL=16000000 #OpenLog
-#XTAL=8000000 #Arduino 3.3v Pro
+#XTAL=16000000 #OpenLog
+XTAL=8000000 #Arduino 3.3v Pro
 #XTAL=14745600 #JPEG Trigger
-CFLAGS=-g -Os -Wall -mmcu=$(CPU) -DF_CPU=$(XTAL) -I../fat32lib -I../uart  -DRXBUFBITS=10 -DTXBUFBITS=4
+CFLAGS=-g -Os -Wall -mmcu=$(CPU) -DF_CPU=$(XTAL) -I../fat32lib -I../uart  -DRXBUFBITS=10 -DTXBUFBITS=4 -DHYPERLOG
 CC=avr-gcc
 
 .c.o:

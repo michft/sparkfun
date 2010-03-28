@@ -47,11 +47,19 @@ void uartputch(unsigned char c)
 static char rxbuf[1 << RXBUFBITS];
 static volatile unsigned rxhead, rxtail;
 // insertat, line ready, eol, bol
+unsigned char xoffflg = 0;
 ISR(USART_RX_vect)
 {
     // errors, overrun?
     rxbuf[rxhead++] = UDR0;
     rxhead &= (1 << RXBUFBITS) - 1;
+#ifdef HYPERLOG
+    if( 4 < ((rxtail - rxhead) &  ((1 << RXBUFBITS) - 1) )) {
+        PORTD |= 0x20;
+        uartputch( 0x13 );
+        xoffflg = 1;
+    }
+#endif
 }
 
 int uartgetch()
@@ -61,6 +69,13 @@ int uartgetch()
         return -1;
     t = rxbuf[rxtail++];
     rxtail &= (1 << RXBUFBITS) - 1;
+#ifdef HYPERLOG
+    if( xoffflg && 16 < ((rxhead - rxtail ) & ((1 << RXBUFBITS) - 1 ))) { 
+        PORTD &= ~0x20;
+        uartputch( 0x10 );
+        xoffflg = 0;
+    }
+#endif
     return 0xff & t;
 }
 

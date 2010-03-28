@@ -432,6 +432,7 @@ int main(int argc, char *argv[])
             break;
         case '#':
             erasecard();
+            fat32format();
             break;
         case 'R':
         case 'V':
