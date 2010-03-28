@@ -44,8 +44,10 @@ void uartputch(unsigned char c)
 }
 
 //RX - line by line passthru
-static char rxbuf[1 << RXBUFBITS];
-static volatile unsigned rxhead, rxtail;
+//static 
+unsigned char rxbuf[1 << RXBUFBITS];
+//static 
+volatile unsigned rxhead, rxtail;
 // insertat, line ready, eol, bol
 unsigned char xoffflg = 0;
 ISR(USART_RX_vect)
