@@ -15,3 +15,4 @@ u8 writesec(u32 addr);
 u32 sdnumsectors;
 
 void erasecard(void);
+u8 cardnotbusy(void);

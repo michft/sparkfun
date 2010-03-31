@@ -264,6 +264,13 @@ static void setblockaddr(u32 blkaddr)
     rw1bcmd[5] = 0xff;
 }
 
+u8 cardnotbusy(void) {
+    csact();
+    u8 ret = waitnotspi(0); // wait 8 cycles for not busy
+    csinact();
+    return ret;
+}
+
 u8 readsec(u32 blkaddr)
 {
     u8 ret = 1;

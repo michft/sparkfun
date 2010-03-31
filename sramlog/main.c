@@ -163,10 +163,11 @@ int main(void)
 extern volatile unsigned rxhead, rxtail;
 extern unsigned char rxbuf[1 << RXBUFBITS];
         if( rxhead == rxtail ) {
-            while( wramaddr - rramaddr > 512 ) {
-                readdat( filesectbuf, 512 );
-                writenextsect();
-            }
+            if( cardnotbusy() )
+                while( wramaddr - rramaddr > 512 ) {
+                    readdat( filesectbuf, 512 );
+                    writenextsect();
+                }
             if( !cnt-- ) {
      //            UCSR0A &= ~0x10;
                 flushbuf();
@@ -202,7 +203,7 @@ extern unsigned char rxbuf[1 << RXBUFBITS];
                 rxtail &= (1 << RXBUFBITS) - 1;
             }
         }
-        if( wramaddr - rramaddr > 512 ) { // for speed, just do one
+        if( wramaddr - rramaddr > 512 && cardnotbusy() ) { // for speed, just do one
             readdat( filesectbuf, 512 );
             writenextsect();
         }
